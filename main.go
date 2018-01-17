@@ -16,8 +16,8 @@ import (
 //NewV4 - get clean UUID without dashes
 //
 func NewV4() string {
-	v4 := uuid.NewV4().String()
-	return strings.Replace(v4, "-", "", -1)
+	v4, _ := uuid.NewV4()
+	return strings.Replace(v4.String(), "-", "", -1)
 }
 
 func CompressString(s string) (string, error) {
