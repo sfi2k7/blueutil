@@ -1,4 +1,4 @@
-package http
+package blueutil
 
 import (
 	"bytes"
@@ -10,13 +10,13 @@ const (
 	contentType = "application/json"
 )
 
-type Client struct {
+type HttpClient struct {
 	Headers     map[string]string
 	ContentType string
 	r           *http.Request
 }
 
-func (cl *Client) addHeaders(r *http.Request) {
+func (cl *HttpClient) addHeaders(r *http.Request) {
 	if cl.Headers != nil {
 		for k, v := range cl.Headers {
 			r.Header.Add(k, v)
@@ -24,7 +24,7 @@ func (cl *Client) addHeaders(r *http.Request) {
 	}
 }
 
-func (cl *Client) Get(url string) ([]byte, error) {
+func (cl *HttpClient) Get(url string) ([]byte, error) {
 	c := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 
@@ -45,7 +45,7 @@ func (cl *Client) Get(url string) ([]byte, error) {
 	return body, nil
 }
 
-func (cl *Client) Post(url string, data []byte) ([]byte, error) {
+func (cl *HttpClient) Post(url string, data []byte) ([]byte, error) {
 	c := &http.Client{}
 	rdr := bytes.NewReader(data)
 	req, err := http.NewRequest("POST", url, rdr)
@@ -65,7 +65,7 @@ func (cl *Client) Post(url string, data []byte) ([]byte, error) {
 	return body, nil
 }
 
-func (cl *Client) Put(url string, data []byte) ([]byte, error) {
+func (cl *HttpClient) Put(url string, data []byte) ([]byte, error) {
 	c := &http.Client{}
 	rdr := bytes.NewReader(data)
 	req, err := http.NewRequest("PUT", url, rdr)
