@@ -16,12 +16,23 @@ type HttpClient struct {
 	r           *http.Request
 }
 
+func (cl *HttpClient) AddHeader(key, value string) error {
+	if cl.Headers == nil {
+		cl.Headers = make(map[string]string)
+	}
+
+	cl.Headers[key] = value
+	return nil
+}
+
 func (cl *HttpClient) addHeaders(r *http.Request) {
 	if cl.Headers != nil {
 		for k, v := range cl.Headers {
 			r.Header.Add(k, v)
 		}
 	}
+
+	cl.Headers = nil
 }
 
 func (cl *HttpClient) Get(url string) ([]byte, error) {

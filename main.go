@@ -2,7 +2,10 @@ package blueutil
 
 import (
 	"bytes"
+	"errors"
 	"strings"
+
+	"gopkg.in/mgo.v2"
 
 	"compress/gzip"
 
@@ -11,6 +14,7 @@ import (
 	"io/ioutil"
 
 	"github.com/satori/go.uuid"
+	"gopkg.in/mgo.v2/bson"
 )
 
 //NewV4 - get clean UUID without dashes
@@ -18,6 +22,16 @@ import (
 func NewV4() string {
 	v4, _ := uuid.NewV4()
 	return strings.Replace(v4.String(), "-", "", -1)
+}
+
+func ID4() string {
+	v4 := NewV4()
+	return v4[0:4]
+}
+
+func ID6() string {
+	v4 := NewV4()
+	return v4[0:6]
 }
 
 func CompressString(s string) (string, error) {
@@ -59,4 +73,32 @@ func UncompressString(s string) (string, error) {
 		return "", err
 	}
 	return string(out), nil
+}
+
+func MoveCollection(source, target *mgo.Database, cn string) error {
+	count, err := source.C(cn).Count()
+	if err != nil {
+		return err
+	}
+	limit := 1000
+	skip := 0
+
+	for {
+		var all []interface{}
+		err = source.C(cn).Find(bson.M{}).Skip(skip).Limit(limit).All(&all)
+		if err != nil {
+			return err
+		}
+		if len(all) == 0 {
+			return errors.New("Done Copying - 0 in Source")
+		}
+		skip += len(all)
+		err = target.C(cn).Insert(all...)
+		if err != nil {
+			return err
+		}
+		if skip == count {
+			return nil
+		}
+	}
 }
