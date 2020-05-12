@@ -2,7 +2,6 @@ package blueutil
 
 import (
 	"bytes"
-	"errors"
 	"strings"
 
 	"gopkg.in/mgo.v2"
@@ -13,7 +12,7 @@ import (
 
 	"io/ioutil"
 
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -90,10 +89,40 @@ func MoveCollection(source, target *mgo.Database, cn string) error {
 			return err
 		}
 		if len(all) == 0 {
-			return errors.New("Done Copying - 0 in Source")
+			return nil
+			// return errors.New("Done Copying - 0 in Source")
 		}
 		skip += len(all)
 		err = target.C(cn).Insert(all...)
+		if err != nil {
+			return err
+		}
+		if skip == count {
+			return nil
+		}
+	}
+}
+
+func MoveCollection2(source, target *mgo.Database, cn string, tcn string) error {
+	count, err := source.C(cn).Count()
+	if err != nil {
+		return err
+	}
+	limit := 1000
+	skip := 0
+
+	for {
+		var all []interface{}
+		err = source.C(cn).Find(bson.M{}).Skip(skip).Limit(limit).All(&all)
+		if err != nil {
+			return err
+		}
+		if len(all) == 0 {
+			return nil
+			// return errors.New("Done Copying - 0 in Source")
+		}
+		skip += len(all)
+		err = target.C(tcn).Insert(all...)
 		if err != nil {
 			return err
 		}
